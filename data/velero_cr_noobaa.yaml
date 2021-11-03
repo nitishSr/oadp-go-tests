@@ -1,0 +1,35 @@
+apiVersion: oadp.openshift.io/v1alpha1
+kind: Velero
+metadata:
+ namespace: openshift-adp
+ name: example-velero
+spec:
+ volumeSnapshotLocations:
+   - config:
+       profile: default
+       region: us-west-1
+     name: default
+     provider: aws
+ backupStorageLocations:
+   - config:
+       profile: default
+       region: us-west-1
+       s3Url: ""
+       s3ForcePathStyle: "true"
+       insecureSkipTLSVerify: "true"
+     credential:
+       name: cloud-credentials
+       namespace: openshift-adp
+       key: cloud      # mandatory spec
+     name: default
+     objectStorage:
+       bucket: first.bucket
+       prefix: velero
+     provider: aws
+ enableRestic: true
+ veleroFeatureFlags:
+   - EnableCSI
+ defaultVeleroPlugins:
+   - aws
+   - csi
+   - openshift

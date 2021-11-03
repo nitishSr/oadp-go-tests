@@ -6,7 +6,7 @@ This is a preview only repo for easing the process to get started with Go lang a
 
 #### Pre-requisites
 
-1. OCP cluster should be up and running with a namespace created or you can use "default" namespace
+1. OCP cluster should be up and running
 
 2. kubeconfig file generated for your OCP cluster
 
@@ -17,6 +17,8 @@ This is a preview only repo for easing the process to get started with Go lang a
    - Login to your OCP using `oc login` command
    
    - In the current directory, you should be able to see the kubeconfig file generated for your OCP cluster
+
+4. OADP operator must be installed
 
 #### Instructions
 
@@ -38,6 +40,6 @@ This is a preview only repo for easing the process to get started with Go lang a
    
    `export KUBECONFIG=/path/to/kubeconfig`
    
-6. Run sample test which creates a secret in a given namespace
+6. Run velero CR test which creates a Velero CRD in OADP operator's namespace
 
    `go test`

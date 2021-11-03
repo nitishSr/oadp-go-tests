@@ -4,33 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"sync"
 
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
-
-var loadOnce sync.Once
-var kubeconfig clientcmd.ClientConfig
-
-// Loads kubeconfig object and returns rest client config
-func getKubeRestConfig() (*rest.Config, error) {
-	loadOnce.Do(func() {
-		kubeconfig = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(clientcmd.NewDefaultClientConfigLoadingRules(),
-			&clientcmd.ConfigOverrides{},
-		)
-	})
-	restconfig, err := kubeconfig.ClientConfig()
-	if err != nil {
-		return nil, err
-	}
-	return restconfig, nil
-}
 
 // Returns the kubernetes client set config object
 func getKubeClientSet() (*kubernetes.Clientset, error) {
@@ -72,7 +52,12 @@ func CreateSecret(credsFileName string, namespace string, secretName string) err
 	if err != nil {
 		return err
 	}
+
+	// Read data from credentials file
 	credsData, err := getFileData(credsFileName)
+	if err != nil {
+		return err
+	}
 
 	// Define a struct for holding secret configs
 	secretConfig := coreV1.Secret{
@@ -90,11 +75,14 @@ func CreateSecret(credsFileName string, namespace string, secretName string) err
 		Type: coreV1.SecretTypeOpaque,
 	}
 
+	// Create Secret using coreV1 API
 	secret, err := kubeclientset.CoreV1().Secrets(namespace).Create(context.TODO(), &secretConfig, metav1.CreateOptions{})
 	if apierrors.IsAlreadyExists(err) {
+		fmt.Printf("Secret with name %s already exists ! Hence, Skipping this step ...\n", secretName)
+		return nil
+	} else if err != nil {
 		return err
 	}
-
-	fmt.Printf("New secret created with name - %s ", secret.Name)
+	fmt.Printf("New secret created with name - %s \n", secret.Name)
 	return nil
 }
